@@ -1,0 +1,8 @@
+{
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/config-schema.json",
+  "name": "twentyfortyeight",
+  "compatibility_date": "2026-11-06",
+  "assets": {
+    "directory": "./output/wwwroot"
+  }
+}
