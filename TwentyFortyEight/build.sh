@@ -10,6 +10,6 @@ chmod +x dotnet-install.sh
 export PATH="$PWD/.dotnet:$PATH"
 
 # Publish Blazor WebAssembly
-dotnet publish ./TwentyFortyEight/TwentyFortyEight.csproj \
+dotnet publish ./TwentyFortyEight.csproj \
     -c Release \
     -o output
