@@ -1,6 +1,8 @@
 ﻿@page "/"
+
 @using TwentyFortyEight.Models
 @using TwentyFortyEight.Services
+
 @inject GameStorageService Storage
 
 <PageTitle>2048</PageTitle>
@@ -34,6 +36,9 @@
                 <strong>@_data.BestScore</strong>
             </div>
 
+            <button @onclick="() => _showStatistics = true">
+                Highscores
+            </button>
             <button class="new-game" @onclick="NewGame">
                 New Game
             </button>
@@ -86,62 +91,81 @@
                 Use your arrow keys or swipe to move the tiles.
                 Matching numbers combine into one.
             </p>
+            <p>
+                <strong>No tracking, Offline caching, made with AI</strong>
+            </p>
         </div>
+        
+        @if (_showStatistics) {
+            <div class="dialog-backdrop" @onclick="() => _showStatistics = false">
+                <div class="statistics-dialog" @onclick:stopPropagation>
+                    <div class="dialog-header">
+                        <h2>Highscores</h2>
+                        <button @onclick="() => _showStatistics = false">
+                            &times;
+                        </button>
+                    </div>
 
-        <section class="statistics">
-            <h2>Your Progress</h2>
+                    
+                    <section class="statistics">
+                        <h2>Your Progress</h2>
 
-            <div class="statistics-grid">
-                <div>
-                    <span>Games played</span>
-                    <strong>@_data.History.Count</strong>
-                </div>
+                        <div class="statistics-grid">
+                            <div>
+                                <span>Games played</span>
+                                <strong>@_data.History.Count</strong>
+                            </div>
 
-                <div>
-                    <span>Wins</span>
-                    <strong>@WinCount</strong>
-                </div>
+                            <div>
+                                <span>Wins</span>
+                                <strong>@WinCount</strong>
+                            </div>
 
-                <div>
-                    <span>Win rate</span>
-                    <strong>@WinRate%</strong>
-                </div>
+                            <div>
+                                <span>Win rate</span>
+                                <strong>@WinRate%</strong>
+                            </div>
 
-                <div>
-                    <span>Average score</span>
-                    <strong>@AverageScore</strong>
-                </div>
+                            <div>
+                                <span>Average score</span>
+                                <strong>@AverageScore</strong>
+                            </div>
 
-                <div>
-                    <span>Highest tile</span>
-                    <strong>@HighestTile</strong>
-                </div>
+                            <div>
+                                <span>Highest tile</span>
+                                <strong>@HighestTile</strong>
+                            </div>
 
-                <div>
-                    <span>Best score</span>
-                    <strong>@_data.BestScore</strong>
+                            <div>
+                                <span>Best score</span>
+                                <strong>@_data.BestScore</strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    @if (_data.History.Count > 0) {
+                        <section class="statistics history">
+                            <h2>Recent Games</h2>
+
+                            @foreach (var record in _data.History.Take(20)) {
+                                <div class="history-row">
+                                    <div>
+                                        <strong>@record.Score</strong>
+                                        <span>@record.CompletedAtUtc.ToLocalTime().ToString("g")</span>
+                                    </div>
+
+                                    <span class="@(record.Won ? "win-label" : "loss-label")">
+                                        @(record.Won ? "Won" : "Game over")
+                                    </span>
+                                </div>
+                            }
+                        </section>
+                    }
+
                 </div>
             </div>
-        </section>
-
-        @if (_data.History.Count > 0) {
-            <section class="statistics history">
-                <h2>Recent Games</h2>
-
-                @foreach (var record in _data.History.Take(20)) {
-                    <div class="history-row">
-                        <div>
-                            <strong>@record.Score</strong>
-                            <span>@record.CompletedAtUtc.ToLocalTime().ToString("g")</span>
-                        </div>
-
-                        <span class="@(record.Won ? "win-label" : "loss-label")">
-                            @(record.Won ? "Won" : "Game over")
-                        </span>
-                    </div>
-                }
-            </section>
         }
+
     </div>
 }
 
@@ -152,7 +176,7 @@
 
     private bool _initialized;
     private bool _continueAfterWin;
-
+    private bool _showStatistics;
     private double _pointerStartX;
     private double _pointerStartY;
     private bool _pointerActive;

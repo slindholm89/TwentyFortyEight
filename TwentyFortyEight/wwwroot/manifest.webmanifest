@@ -1,6 +1,6 @@
 {
   "name": "TwentyFortyEight",
-  "short_name": "TwentyFortyEight",
+  "short_name": "2048",
   "id": "./",
   "start_url": "./",
   "display": "standalone",

@@ -520,3 +520,103 @@ button {
             font-size: 18px;
         }
 }
+
+
+
+
+/* Dialog backdrop */
+.dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(3, 7, 18, 0.82);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+/* Dialog */
+.statistics-dialog {
+    width: 100%;
+    max-width: 520px;
+    max-height: min(85vh, 700px);
+    overflow-y: auto;
+    padding: 1.5rem;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 18px;
+    background: #151d30;
+    color: #e2e8f0;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+    animation: dialog-appear 180ms ease-out;
+}
+
+/* Dialog header */
+.dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+    .dialog-header h2 {
+        margin: 0;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #f1f5f9;
+    }
+
+    .dialog-header button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border: 0;
+        border-radius: 10px;
+        background: rgba(148, 163, 184, 0.12);
+        color: #cbd5e1;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: background 150ms ease, color 150ms ease;
+    }
+
+        .dialog-header button:hover {
+            background: rgba(148, 163, 184, 0.22);
+            color: #fff;
+        }
+
+        .dialog-header button:focus-visible {
+            outline: 2px solid #a78bfa;
+            outline-offset: 3px;
+        }
+
+@keyframes dialog-appear {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 480px) {
+    .statistics-dialog {
+        padding: 1.2rem;
+        border-radius: 14px;
+        max-height: 90vh;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .statistics-dialog {
+        animation: none;
+    }
+}
