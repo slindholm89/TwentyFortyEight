@@ -1,0 +1,43 @@
+## WORKSPACE EXECUTIVE SUMMARY (YAML)
+# Generated: 2026-11-06T13:40:31.3395841+01:00
+# Root: D:\Repos\TwentyFortyEight
+Architecture:
+  Type: Backend (C#/.NET)
+  Scale: 16 relevant source files
+  Components: 0
+  Controllers: 0
+  Models: 4
+  Services: 1
+---
+- File: TwentyFortyEight\TwentyFortyEight.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk.BlazorWebAssembly'>  <PropertyGroup>   <TargetFramework>net10.0</TargetFramework>   <Nullable>enable</Nullable>   <Imp..."
+- File: TwentyFortyEight.slnx
+  Preview: "<Solution>  <Project Path='TwentyFortyEight/TwentyFortyEight.csproj' /> </Solution> "
+- File: output\dotnet.js
+  Preview: "//! Licensed to the .NET Foundation under one or more agreements. //! The .NET Foundation licenses this file to you under the MIT license. /*! bundler..."
+- File: output\TwentyFortyEight.runtimeconfig.json
+  Preview: "{  'runtimeOptions': {   'tfm': 'net10.0',   'includedFrameworks': [    {     'name': 'Microsoft.NETCore.App',     'version': '10.0.14'    }   ],   'w..."
+- File: output\TwentyFortyEight.staticwebassets.endpoints.json
+  Preview: "{'Version':1,'ManifestType':'Publish','Endpoints':[{'Route':'_framework/Microsoft.AspNetCore.Components.Web.e5r080hi4j.wasm','AssetFile':'_framework/M..."
+- File: output2\dotnet.js
+  Preview: "//! Licensed to the .NET Foundation under one or more agreements. //! The .NET Foundation licenses this file to you under the MIT license. /*! bundler..."
+- File: output2\TwentyFortyEight.runtimeconfig.json
+  Preview: "{  'runtimeOptions': {   'tfm': 'net10.0',   'includedFrameworks': [    {     'name': 'Microsoft.NETCore.App',     'version': '10.0.14'    }   ],   'w..."
+- File: output2\TwentyFortyEight.staticwebassets.endpoints.json
+  Preview: "{'Version':1,'ManifestType':'Publish','Endpoints':[{'Route':'_framework/Microsoft.AspNetCore.Components.Web.e5r080hi4j.wasm','AssetFile':'_framework/M..."
+- File: TwentyFortyEight\Program.cs
+  Preview: "using Microsoft.AspNetCore.Components.Web; using Microsoft.AspNetCore.Components.WebAssembly.Hosting; using TwentyFortyEight; using TwentyFortyEight.S..."
+- File: TwentyFortyEight\Models\GameRecord.cs
+  Preview: "namespace TwentyFortyEight.Models {   public sealed class GameRecord {     public Guid Id { get; set; } = Guid.NewGuid();     public int Score { get; ..."
+- File: TwentyFortyEight\Models\GameSave.cs
+  Preview: "namespace TwentyFortyEight.Models {   public sealed class GameSave {     public int[] Board { get; set; } = new int[16];     public int Score { get; s..."
+- File: TwentyFortyEight\Models\GameStorageData.cs
+  Preview: "namespace TwentyFortyEight.Models {   public sealed class GameStorageData {     public GameSave? ActiveGame { get; set; }     public int BestScore { g..."
+- File: TwentyFortyEight\Models\MoveDirection.cs
+  Preview: "namespace TwentyFortyEight.Models {   public enum MoveDirection {     Left,     Right,     Up,     Down   } } "
+- File: TwentyFortyEight\Properties\launchSettings.json
+  Preview: "{  '$schema': 'https://json.schemastore.org/launchsettings.json',  'profiles': {   'http': {    'commandName': 'Project',    'dotnetRunMessages': true..."
+- File: TwentyFortyEight\Services\GameEngine.cs
+  Preview: "using TwentyFortyEight.Models; namespace TwentyFortyEight.Services {   public sealed class GameEngine {     private const int Size = 4;     private re..."
+- File: TwentyFortyEight\Services\GameStorageService.cs
+  Preview: "using Microsoft.JSInterop; using TwentyFortyEight.Models; namespace TwentyFortyEight.Services {   public sealed class GameStorageService : IAsyncDispo..."

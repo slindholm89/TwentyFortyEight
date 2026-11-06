@@ -1,0 +1,311 @@
+﻿@page "/"
+@using TwentyFortyEight.Models
+@using TwentyFortyEight.Services
+@inject GameStorageService Storage
+
+<PageTitle>2048</PageTitle>
+
+@if (!_initialized) {
+    <div class="game-container">
+        <p>Loading game...</p>
+    </div>
+} else {
+    <div class="game-container"
+         tabindex="0"
+         autofocus
+         @onkeydown="HandleKeyDown"
+         @onkeydown:preventDefault>
+
+        <div class="game-header">
+            <div>
+                <h1>2048</h1>
+                <p>Join the numbers and reach 2048!</p>
+            </div>
+
+            <div class="score-box">
+                <span>Score</span>
+                <strong>@_game.Score</strong>
+            </div>
+        </div>
+
+        <div class="game-actions">
+            <div class="score-box">
+                <span>Best</span>
+                <strong>@_data.BestScore</strong>
+            </div>
+
+            <button class="new-game" @onclick="NewGame">
+                New Game
+            </button>
+        </div>
+
+        <div class="game-board"
+             @onpointerdown="HandlePointerDown"
+             @onpointerup="HandlePointerUp"
+             @onpointercancel="HandlePointerCancel"
+             @onpointerleave="HandlePointerCancel"
+             @onpointerdown:preventDefault
+             @onpointerup:preventDefault>
+
+            @foreach (var value in _game.Board.Cast<int>()) {
+                <div class="tile" data-value="@value">
+                    @if (value > 0) {
+                        @value
+                    }
+                </div>
+            }
+        </div>
+
+        @if (_game.HasWon && !_continueAfterWin) {
+            <div class="game-message win">
+                <h2>You reached 2048!</h2>
+                <p>Congratulations!</p>
+
+                <button @onclick="ContinueGame">
+                    Keep Playing
+                </button>
+
+                <button @onclick="NewGame">
+                    New Game
+                </button>
+            </div>
+        } else if (_game.IsGameOver) {
+            <div class="game-message lost">
+                <h2>Game Over!</h2>
+                <p>Final score: @_game.Score</p>
+
+                <button @onclick="NewGame">
+                    Try Again
+                </button>
+            </div>
+        }
+
+        <div class="game-footer">
+            <p>
+                <strong>How to play:</strong>
+                Use your arrow keys or swipe to move the tiles.
+                Matching numbers combine into one.
+            </p>
+        </div>
+
+        <section class="statistics">
+            <h2>Your Progress</h2>
+
+            <div class="statistics-grid">
+                <div>
+                    <span>Games played</span>
+                    <strong>@_data.History.Count</strong>
+                </div>
+
+                <div>
+                    <span>Wins</span>
+                    <strong>@WinCount</strong>
+                </div>
+
+                <div>
+                    <span>Win rate</span>
+                    <strong>@WinRate%</strong>
+                </div>
+
+                <div>
+                    <span>Average score</span>
+                    <strong>@AverageScore</strong>
+                </div>
+
+                <div>
+                    <span>Highest tile</span>
+                    <strong>@HighestTile</strong>
+                </div>
+
+                <div>
+                    <span>Best score</span>
+                    <strong>@_data.BestScore</strong>
+                </div>
+            </div>
+        </section>
+
+        @if (_data.History.Count > 0) {
+            <section class="statistics history">
+                <h2>Recent Games</h2>
+
+                @foreach (var record in _data.History.Take(20)) {
+                    <div class="history-row">
+                        <div>
+                            <strong>@record.Score</strong>
+                            <span>@record.CompletedAtUtc.ToLocalTime().ToString("g")</span>
+                        </div>
+
+                        <span class="@(record.Won ? "win-label" : "loss-label")">
+                            @(record.Won ? "Won" : "Game over")
+                        </span>
+                    </div>
+                }
+            </section>
+        }
+    </div>
+}
+
+@code {
+    private readonly GameEngine _game = new();
+
+    private GameStorageData _data = new();
+
+    private bool _initialized;
+    private bool _continueAfterWin;
+
+    private double _pointerStartX;
+    private double _pointerStartY;
+    private bool _pointerActive;
+
+    private const double SwipeThreshold = 35;
+
+    private int WinCount =>
+        _data.History.Count(x => x.Won);
+
+    private int WinRate =>
+        _data.History.Count == 0
+            ? 0
+            : (int)Math.Round(
+                WinCount * 100.0 / _data.History.Count);
+
+    private int AverageScore =>
+        _data.History.Count == 0
+            ? 0
+            : (int)Math.Round(
+                _data.History.Average(x => x.Score));
+
+    private int HighestTile =>
+        _data.History.Count == 0
+            ? 0
+            : _data.History.Max(x => x.HighestTile);
+
+    protected override async Task OnInitializedAsync() {
+        try {
+            _data = await Storage.LoadAsync() ?? new GameStorageData();
+        }
+        catch (Exception ex) when (
+            ex is Microsoft.JSInterop.JSException ||
+            ex is System.Text.Json.JsonException) {
+            // Storage may be unavailable or contain invalid data.
+            _data = new GameStorageData();
+        }
+
+        if (_data.History is null)
+            _data.History = [];
+
+        if (_data.ActiveGame is not null) {
+            try {
+                _game.RestoreState(_data.ActiveGame);
+                _continueAfterWin = _data.ActiveGame.ContinueAfterWin;
+            }
+            catch (ArgumentException) {
+                _game.NewGame();
+                _continueAfterWin = false;
+            }
+        } else {
+            _game.NewGame();
+        }
+
+        _initialized = true;
+
+        await SaveAsync();
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs args) {
+        var direction = args.Key.ToLowerInvariant() switch {
+            "arrowleft" or "a" => MoveDirection.Left,
+            "arrowright" or "d" => MoveDirection.Right,
+            "arrowup" or "w" => MoveDirection.Up,
+            "arrowdown" or "s" => MoveDirection.Down,
+            _ => (MoveDirection?)null
+        };
+
+        if (direction.HasValue)
+            await ApplyMoveAsync(direction.Value);
+    }
+
+    private void HandlePointerDown(PointerEventArgs args) {
+        _pointerStartX = args.ClientX;
+        _pointerStartY = args.ClientY;
+        _pointerActive = true;
+    }
+
+    private async Task HandlePointerUp(PointerEventArgs args) {
+        if (!_pointerActive)
+            return;
+
+        _pointerActive = false;
+
+        double deltaX = args.ClientX - _pointerStartX;
+        double deltaY = args.ClientY - _pointerStartY;
+
+        if (Math.Max(Math.Abs(deltaX), Math.Abs(deltaY)) < SwipeThreshold)
+            return;
+
+        MoveDirection direction;
+
+        if (Math.Abs(deltaX) > Math.Abs(deltaY)) {
+            direction = deltaX > 0
+                ? MoveDirection.Right
+                : MoveDirection.Left;
+        } else {
+            direction = deltaY > 0
+                ? MoveDirection.Down
+                : MoveDirection.Up;
+        }
+
+        await ApplyMoveAsync(direction);
+    }
+
+    private void HandlePointerCancel(PointerEventArgs args) {
+        _pointerActive = false;
+    }
+
+    private async Task ApplyMoveAsync(MoveDirection direction) {
+        if (!_game.Move(direction))
+            return;
+
+        _data.BestScore = Math.Max(_data.BestScore, _game.Score);
+
+        if (_game.IsGameOver && _data.ActiveGame?.IsRecorded != true) {
+            _data.History.Insert(0, new GameRecord {
+                Score = _game.Score,
+                HighestTile = _game.Board.Cast<int>().Max(),
+                Won = _game.HasWon,
+                CompletedAtUtc = DateTimeOffset.UtcNow
+            });
+
+            if (_data.History.Count > 20)
+                _data.History.RemoveRange(20, _data.History.Count - 20);
+        }
+
+        await SaveAsync();
+    }
+
+    private async Task NewGame() {
+        _continueAfterWin = false;
+        _game.NewGame();
+
+        await SaveAsync();
+    }
+
+    private async Task ContinueGame() {
+        _continueAfterWin = true;
+
+        await SaveAsync();
+    }
+
+    private async Task SaveAsync() {
+        var previousSave = _data.ActiveGame;
+
+        _data.ActiveGame = _game.ExportState(
+            _continueAfterWin,
+            previousSave?.IsRecorded ?? false);
+
+        if (_game.IsGameOver && previousSave?.IsRecorded != true) {
+            _data.ActiveGame.IsRecorded = true;
+        }
+
+        await Storage.SaveAsync(_data);
+    }
+}
